@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
-import GFGBarChart from './charts/GFGBarChart'
+import GFGPieChart from './charts/GFGPieChart'
+import GFGProblemsChart from './charts/GFGProblemsChart'
 
 const GeeksforGeeksTracker = ({ user }) => {
   const [username, setUsername] = useState(user.geeksforgeeks || '')
@@ -46,16 +47,29 @@ const GeeksforGeeksTracker = ({ user }) => {
         rank: Math.floor(Math.random() * 10000) + 1,
         easySolved: Math.floor(Math.random() * 200) + 50,
         mediumSolved: Math.floor(Math.random() * 200) + 30,
-        hardSolved: Math.floor(Math.random() * 100) + 10
+        hardSolved: Math.floor(Math.random() * 100) + 10,
+        easyTotal: 300,
+        mediumTotal: 400,
+        hardTotal: 200
       }
       setUserData(mockData)
       
-      // Mock recent problems
-      setRecentProblems([
-        { title: 'Array Rotation', difficulty: 'Easy', status: 'Solved' },
-        { title: 'Binary Search', difficulty: 'Medium', status: 'Solved' },
-        { title: 'Dynamic Programming', difficulty: 'Hard', status: 'Attempted' }
-      ])
+      // Generate mock recent problems data
+      const problems = []
+      const problemNames = [
+        'Array Rotation', 'Missing Number', 'Kadane\'s Algorithm',
+        'Two Pointers Technique', 'Sliding Window', 'Binary Search',
+        'Dynamic Programming', 'Graph Traversal', 'Tree Traversal', 'Sorting Algorithms'
+      ]
+      
+      for (let i = 0; i < 10; i++) {
+        problems.push({
+          title: problemNames[i],
+          difficulty: ['Easy', 'Medium', 'Hard'][Math.floor(Math.random() * 3)],
+          status: Math.random() > 0.3 ? 'Accepted' : 'Wrong Answer'
+        })
+      }
+      setRecentProblems(problems)
     } catch (err) {
       setError('Could not fetch data. Please check the username and try again.')
     }
@@ -167,7 +181,7 @@ const GeeksforGeeksTracker = ({ user }) => {
             <div className="stats-grid">
               <div className="stat-card">
                 <div className="stat-number">{userData.totalSolved}</div>
-                <div className="stat-label">Problems Solved</div>
+                <div className="stat-label">Total Solved</div>
               </div>
               <div className="stat-card">
                 <div className="stat-number">{userData.codingScore}</div>
@@ -178,8 +192,22 @@ const GeeksforGeeksTracker = ({ user }) => {
                 <div className="stat-label">Accuracy</div>
               </div>
               <div className="stat-card">
-                <div className="stat-number">{userData.rank}</div>
+                <div className="stat-number">#{userData.rank}</div>
                 <div className="stat-label">Rank</div>
+              </div>
+            </div>
+            <div className="stats-grid" style={{ marginTop: '20px' }}>
+              <div className="stat-card">
+                <div className="stat-number">{userData.easySolved}</div>
+                <div className="stat-label">Easy</div>
+              </div>
+              <div className="stat-card">
+                <div className="stat-number">{userData.mediumSolved}</div>
+                <div className="stat-label">Medium</div>
+              </div>
+              <div className="stat-card">
+                <div className="stat-number">{userData.hardSolved}</div>
+                <div className="stat-label">Hard</div>
               </div>
             </div>
           </div>
@@ -195,7 +223,7 @@ const GeeksforGeeksTracker = ({ user }) => {
             </h4>
             <div className="problem-list">
               {recentProblems.map((problem, idx) => (
-                <div key={idx} className="problem-item" style={{
+                <div key={idx} className={`problem-item difficulty-${problem.difficulty.toLowerCase()}`} style={{
                   padding: isMobile ? '15px' : '20px',
                   margin: isMobile ? '8px 0' : '12px 0'
                 }}>
@@ -217,10 +245,20 @@ const GeeksforGeeksTracker = ({ user }) => {
       </div>
       
       {userData && (
-        <GFGBarChart
+        <GFGPieChart
           easy={userData.easySolved}
           medium={userData.mediumSolved}
           hard={userData.hardSolved}
+        />
+      )}
+      
+      {userData && (
+        <GFGProblemsChart
+          data={[
+            { difficulty: 'Easy', solved: userData.easySolved, total: userData.easyTotal },
+            { difficulty: 'Medium', solved: userData.mediumSolved, total: userData.mediumTotal },
+            { difficulty: 'Hard', solved: userData.hardSolved, total: userData.hardTotal }
+          ]}
         />
       )}
     </div>

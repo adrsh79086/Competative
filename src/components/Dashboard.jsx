@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
-import LeetCodePieChart from './charts/LeetCodePieChart'
 import CombinedProgressChart from './charts/CombinedProgressChart'
+import PlatformComparisonChart from './charts/PlatformComparisonChart'
 
 const Dashboard = ({ user }) => {
   const [cfStats, setCfStats] = useState(null)
@@ -105,13 +105,8 @@ const Dashboard = ({ user }) => {
       
       <CombinedProgressChart cfStats={cfStats} lcStats={lcStats} gfgStats={gfgStats} />
       
-      {lcStats && (
-        <LeetCodePieChart
-          easy={lcStats.easySolved}
-          medium={lcStats.mediumSolved}
-          hard={lcStats.hardSolved}
-        />
-      )}
+      <PlatformComparisonChart cfStats={cfStats} lcStats={lcStats} gfgStats={gfgStats} />
+      
       {(!user.codeforces && !user.leetcode && !user.geeksforgeeks) && (
         <div className="mt-4 error" style={{ 
           fontSize: isMobile ? '0.9rem' : '1rem',

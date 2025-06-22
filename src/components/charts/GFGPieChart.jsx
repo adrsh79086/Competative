@@ -2,6 +2,7 @@ import React from 'react'
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 
 const COLORS = ['#4a7c59', '#8b6f47', '#8b4747']
+const DIFFICULTY_LABELS = ['Easy', 'Medium', 'Hard']
 
 const GFGPieChart = ({ easy, medium, hard }) => {
   const data = [
@@ -25,7 +26,6 @@ const GFGPieChart = ({ easy, medium, hard }) => {
             nameKey="name"
             cx="50%"
             cy="50%"
-            color="white"
             outerRadius={90}
             label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
           >

@@ -3,7 +3,7 @@ import axios from 'axios'
 import RatingChart from './charts/RatingChart'
 import SubmissionChart from './charts/SubmissionChart'
 
-const CodeforcesTracker = () => {
+const CodeforcesTracker = ({ user }) => {
   const [handle, setHandle] = useState('')
   const [userData, setUserData] = useState(null)
   const [submissions, setSubmissions] = useState([])
@@ -24,8 +24,15 @@ const CodeforcesTracker = () => {
     return () => window.removeEventListener('resize', checkScreenSize)
   }, [])
 
-  const fetchData = async (e) => {
-    e.preventDefault()
+  useEffect(() => {
+    if (user.codeforces) {
+      setHandle(user.codeforces)
+      fetchData(user.codeforces)
+    }
+    // eslint-disable-next-line
+  }, [user.codeforces])
+
+  const fetchData = async (handleToFetch = handle) => {
     setLoading(true)
     setError('')
     setUserData(null)
@@ -35,15 +42,15 @@ const CodeforcesTracker = () => {
     
     try {
       // Fetch user info
-      const userRes = await axios.get(`https://codeforces.com/api/user.info?handles=${handle}`)
+      const userRes = await axios.get(`https://codeforces.com/api/user.info?handles=${handleToFetch}`)
       setUserData(userRes.data.result[0])
       
       // Fetch recent submissions
-      const subRes = await axios.get(`https://codeforces.com/api/user.status?handle=${handle}&from=1&count=10`)
+      const subRes = await axios.get(`https://codeforces.com/api/user.status?handle=${handleToFetch}&from=1&count=10`)
       setSubmissions(subRes.data.result)
       
       // Fetch rating history
-      const ratingRes = await axios.get(`https://codeforces.com/api/user.rating?handle=${handle}`)
+      const ratingRes = await axios.get(`https://codeforces.com/api/user.rating?handle=${handleToFetch}`)
       const ratingData = ratingRes.data.result.slice(-10).map(contest => ({
         contest: contest.contestName,
         rating: contest.newRating
@@ -69,6 +76,11 @@ const CodeforcesTracker = () => {
     setLoading(false)
   }
 
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    fetchData(handle)
+  }
+
   return (
     <div style={{ 
       width: '100%', 
@@ -89,38 +101,73 @@ const CodeforcesTracker = () => {
         }}>
           Codeforces Progress
         </h2>
-        <form onSubmit={fetchData} className="mb-4 flex" style={{ 
-          justifyContent: 'center', 
-          gap: isMobile ? '10px' : '15px',
-          flexDirection: isMobile ? 'column' : 'row'
-        }}>
-          <input
-            className="input"
-            type="text"
-            placeholder="Enter Codeforces handle"
-            value={handle}
-            onChange={e => setHandle(e.target.value)}
-            required
-            style={{ 
-              flex: '1', 
+        {!user.codeforces && (
+          <form onSubmit={handleSubmit} className="mb-4 flex" style={{ 
+            justifyContent: 'center', 
+            gap: isMobile ? '10px' : '15px',
+            flexDirection: isMobile ? 'column' : 'row'
+          }}>
+            <input
+              className="input"
+              type="text"
+              placeholder="Enter Codeforces handle"
+              value={handle}
+              onChange={e => setHandle(e.target.value)}
+              required
+              style={{ 
+                flex: '1', 
+                maxWidth: isMobile ? '100%' : '400px',
+                fontSize: isMobile ? '1rem' : '1.1rem',
+                padding: isMobile ? '12px 16px' : '12px 20px'
+              }}
+            />
+            <button 
+              className="btn" 
+              type="submit" 
+              disabled={loading}
+              style={{
+                fontSize: isMobile ? '1rem' : '1.1rem',
+                padding: isMobile ? '12px 24px' : '12px 32px',
+                width: isMobile ? '100%' : 'auto'
+              }}
+            >
+              {loading ? 'Loading...' : 'Track'}
+            </button>
+          </form>
+        )}
+        {user.codeforces && (
+          <div className="mb-4" style={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            gap: isMobile ? '10px' : '15px', 
+            alignItems: 'center',
+            flexDirection: isMobile ? 'column' : 'row'
+          }}>
+            <div className="input" style={{ 
+              background: 'rgba(255,255,255,0.9)', 
+              color: '#333333', 
+              cursor: 'not-allowed',
+              flex: '1',
               maxWidth: isMobile ? '100%' : '400px',
               fontSize: isMobile ? '1rem' : '1.1rem',
               padding: isMobile ? '12px 16px' : '12px 20px'
-            }}
-          />
-          <button 
-            className="btn" 
-            type="submit" 
-            disabled={loading}
-            style={{
-              fontSize: isMobile ? '1rem' : '1.1rem',
-              padding: isMobile ? '12px 24px' : '12px 32px',
-              width: isMobile ? '100%' : 'auto'
-            }}
-          >
-            {loading ? 'Loading...' : 'Track'}
-          </button>
-        </form>
+            }}>
+              {user.codeforces}
+            </div>
+            <button 
+              className="btn" 
+              onClick={() => fetchData(user.codeforces)} 
+              disabled={loading}
+              style={{
+                fontSize: isMobile ? '1rem' : '1.1rem',
+                padding: isMobile ? '12px 24px' : '12px 32px',
+                width: isMobile ? '100%' : 'auto'
+              }}
+            >
+              {loading ? 'Loading...' : 'Refresh'}
+            </button>
+          </div>
+        )}
         {error && <div className="error">{error}</div>}
         {userData && (
           <div className="mb-4">
